@@ -5,7 +5,7 @@ const mom = require('moment');
 const keys = require('./keys');
 const axios = require('axios');
 const spotify = require('node-spotify-api');
-// const Spotify = new Spotify(keys.spotify);
+// const spotifyKey = new Spotify(keys.spotify);
 
 /* use moment to log the time and date of each request
 
@@ -37,29 +37,32 @@ userInput = () => {
 }
 
 spotifyIt = () => {
+    console.log('\n----------------------------------------')
     inq.prompt([
         {
-            type: 'checkbox',
-            message: 'What do you want to search(the more input the better)?',
-            choices: ['Song', 'Artist', 'Album'],
+            type: 'list',
+            message: 'What do you want to search for?',
+            choices: ['Track', 'Artist', 'Album'],
             name: 'choice'
+        },{
+            type: 'input',
+            message: 'Enter the name',
+            name: 'name'
         }
     ]).then(answer=>{
+
         const input = String(answer.choice);
+        
         if (input === 'Song'){
-            
-        } else if (input === 'Album'){
-            
-        } else if (input === 'Artist'){
-            
-        } else if (input === 'Song,Artist'){
+            axios.get('https://api.spotify.com/v1/search/q='+answer.name).then(response => {
+            console.log(
+                'Artist: ' + response
+            )
+            })
+        } else if (input === 'Album' || input === 'Artist'){
+            axios.get('https://api.spotify.com/v1/search/q='+answer.name+'type='+input).then(response => {
 
-        } else if (input === 'Song,Artist,Album'){
-
-        } else if (input === 'Artist,Album'){
-
-        } else if (input === 'Song,Album'){
-            
+            })
         }
     })
 }
