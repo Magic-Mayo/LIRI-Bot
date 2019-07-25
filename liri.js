@@ -128,9 +128,26 @@ spotifyIt = () => {
                         default: true
                     }
                 ]).then(answer => {
+                    text = () => {
+                        return '\n'+ moment().format('HH:mm:ss MM/DD/YYYY') +
+                        '\n--------------------------------------------------------------------------------'+ '\n' +
+                        '\nArtist: ' + artist[artistCount-1].name +
+                        '\nGenres: ' + artist[artistCount-1].genres.join(', ') +
+                        '\nSpotify Followers: ' + artist[artistCount-1].followers.total +
+                        '\nLink to Artist: ' + artist[artistCount-1].external_urls.spotify +
+                        '\n' +
+                        '\n--------------------------------------------------------------------------------'
+                    }
                     if (!answer.confirm){
                         artistSearch(artistCount);
                     } else {
+                        fs.appendFile('log.txt', text(), err => {
+                            if (err){
+                                console.log('Error: ', err)
+                            } else {
+                                console.log('Content Added!')
+                            }
+                        })
                         console.log('\n--------------------------------------------------------------------------------', '\n',
                         '\nSearch complete', '\n',
                         '\n--------------------------------------------------------------------------------');
