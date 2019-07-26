@@ -9,7 +9,7 @@ const spotify = new Spotify(keys.spotify);
 let spotifyArtist = [];
 let spotifyAlbum = [];
 let spotifyTrack = [];
-let conertVenue = [];
+let concertVenue = [];
 let artistCount = 0;
 let albumCount = 0;
 let trackCount = 0;
@@ -62,14 +62,17 @@ spotifyIt = () => {
         const input = String(answer.choice.toLowerCase());
 
         if (answer.name === ''){
-            spotify.search(/* get endpoint for Ace of Base The Sign */).then(response => {
+            spotify.request('https://api.spotify.com/v1/tracks/0hrBpAOgrt8RXigk83LLNE').then(response => {
+                const ace = response.album;
+                // console.log(response)
                 console.log(
                     '\nThis is what happens when you leave it to me ;)',
-                    '\n--------------------------------------------------------------------------------',
-                    '\nArtist: ' + artist[count].name,
-                    '\nGenres: ' + artist[count].genres.join(', '),
-                    '\nSpotify Followers: ' + artist[count].followers.total,
-                    '\nLink to Artist: ' + artist[count].external_urls.spotify,
+                    '\n--------------------------------------------------------------------------------\n',
+                    '\nTrack: ' + ace.name,
+                    '\nArtist: ' + ace.artists[0].name,
+                    '\nAlbum: ' + ace.name,
+                    '\nAlbum Release Date: ' + ace.release_date,
+                    '\nLink to track: ' + ace.external_urls.spotify,
                     '\n',
                     '\n--------------------------------------------------------------------------------'
                 );
@@ -120,7 +123,7 @@ spotifyIt = () => {
                     const track = response.tracks.items;
                     if (track.length > count){
                         console.log(
-                            '\nTrack: ' + answer.name,
+                            '\nTrack: ' + track[count].name,
                             '\nArtist: ' + track[count].artists[0].name,
                             '\nAlbum: ' + track[count].album.name,
                             '\nAlbum Release Date: ' + track[count].album.release_date,
@@ -154,7 +157,6 @@ spotifyIt = () => {
                             '\nGenres: ' + artist[artistCount-1].genres.join(', ') +
                             '\nSpotify Followers: ' + artist[artistCount-1].followers.total +
                             '\nLink to Artist: ' + artist[artistCount-1].external_urls.spotify +
-                            '\n' +
                             '\n--------------------------------------------------------------------------------'
                         }
 
@@ -169,21 +171,21 @@ spotifyIt = () => {
                                     default: false
                                 }
                             ]).then(answer => {
+                                fs.appendFile('log.txt', text(), err => {
+                                    if (err){
+                                        console.log('Error: ', err)
+                                    } else {
+                                        console.log('Content Added!')
+                                    }
+                                })
                                 if (!answer.concert) {
-                                    fs.appendFile('log.txt', text(), err => {
-                                        if (err){
-                                            console.log('Error: ', err)
-                                        } else {
-                                            console.log('Content Added!')
-                                        }
-                                    })
                                     console.log('\n--------------------------------------------------------------------------------', '\n',
                                     '\nSearch complete', '\n',
                                     '\n--------------------------------------------------------------------------------');
                                     artistCount = 0;
                                     spotifyArtist = [];
                                 } else {
-                                    concertIt(artist[artistCount-1].name)
+                                    concertIt(artist[artistCount-1].name);
                                 }
                             })
                         }
@@ -200,9 +202,24 @@ spotifyIt = () => {
                             default: true
                         }
                     ]).then(answer => {
+                        const text = `Album Search at ${moment().format('HH:MM:ss MM/DD/YYYY')}
+                        \nArtist: ${album[albumCount-1].artists[0].name}
+                        \nAlbum: ${album[albumCount-1].name}
+                        \nTotal Tracks: ${album[albumCount-1].total_tracks}
+                        \nAlbum Release: ${moment(album[albumCount-1].release_date).format('MM/DD/YYYY')}
+                        \nLink to album: ${album[albumCount-1].external_urls.spotify}
+                        \n--------------------------------------------------------------------------------`;
+
                         if (!answer.confirm){
                             albumSearch(albumCount);
                         } else {
+                            fs.appendFile('log.txt', text, function(err,data){
+                                if(err){
+                                    console.log('Error: ', err)
+                                } else {
+                                    console.log('Content Added!')
+                                }
+                            })
                             console.log('\n--------------------------------------------------------------------------------', '\n',
                             '\nSearch complete', '\n',
                             '\n--------------------------------------------------------------------------------');
@@ -212,7 +229,7 @@ spotifyIt = () => {
                     })
                 } else if (input === 'track'){
                     const track = response.tracks.items
-                    console.log(track[0].artists[0].name)
+                    // console.log(track[0])
                     spotifyTrack.push(track);
                     trackSearch(trackCount);
                     inq.prompt([
@@ -223,9 +240,25 @@ spotifyIt = () => {
                             default: true
                         }
                     ]).then(answer => {
+                        const text = `\nTrack Search at ${moment().format('HH:MM:ss MM/DD/YYYY')}
+                        \n--------------------------------------------------------------------------------
+                        \nTrack: ${track[trackCount-1].name}
+                        \nArtist: ${track[trackCount-1].artists[0].name}
+                        \nAlbum: ${track[trackCount-1].album.name}
+                        \nAlbum Release Date: ${track[trackCount-1].album.release_date}
+                        \nLink to track: ${track[trackCount-1].external_urls.spotify}
+                        \n--------------------------------------------------------------------------------`;
+
                         if (!answer.confirm){
                             trackSearch(trackCount);
                         } else {
+                            fs.appendFile('log.txt', text, function(err,data){
+                                if(err){
+                                    console.log('Error: ', err)
+                                } else {
+                                    console.log('Content Added!')
+                                }
+                            })
                             console.log('\n--------------------------------------------------------------------------------', '\n',
                             '\nSearch complete', '\n',
                             '\n--------------------------------------------------------------------------------');
@@ -241,68 +274,168 @@ spotifyIt = () => {
 
 // Takes user input and searches for a concert for that artist
 concertIt = (artist) => {
-    inq.prompt([
-        {
-            type: 'input',
-            message: 'Please enter the name of the artist you would like to search',
-            name: 'concert'
-        }
-    ]).then(answer => {
-
-        // Function to loop thru the venues after search if the user wants to keep searching for different venues
-        venueSearch = (count) => {
-            // const venue = need data
-            if (venueCount > count) {
-                console.log(
-                    'Venue: ' /* + venue name from data */,
-                    'Location: ' /* + venue location from data */,
-                    'Concert date: ' + moment(/* date from data */).format('MM/DD/YYYY')
-                )
-                venueCount++
-            } else {
-                console.log('\n--------------------------------------------------------------------------------', '\n',
-                '\nSorry, we couldn\'t find a concert for you :(', '\n',
-                '\n--------------------------------------------------------------------------------')
-        }
-        }
-        axios.get('https://rest.bandsintown.com/artists/' + artist + '/events?app_id=codingbootcamp').then(venue => {
-            concertVenue.push(/* finish once data is available */);
-            venueSearch(venueCount);
-        })
+    if (!artist){
         inq.prompt([
             {
-                type: 'confirm',
-                message: 'Would you like to search for a different venue?',
-                name: 'venue',
-                default: false
+                type: 'input',
+                message: 'Please enter the name of the artist you would like to search',
+                name: 'artist'
             }
-        ]).then(answer => {
-            venue = () => {
-                return '\nConcert Search at '+ moment().format('HH:mm:ss MM/DD/YYYY') +
-                '\n--------------------------------------------------------------------------------'+ '\n' +
-                'Venue: ' /* + venue name from data */,
-                'Location: ' /* + venue location from data */,
-                'Concert date: ' + moment(/* date from data */).format('MM/DD/YYYY'),
-                '\n' +
-                '\n--------------------------------------------------------------------------------'
+    ]).then(answer => {
+        const theater = answer.artist;
+        axios.get(`https://rest.bandsintown.com/artists/${theater}/events?app_id=codingbootcamp`).then(response => {
+            concertVenue.push(response.data);
+            // console.log(venue.data)
+
+            // Function to loop thru the venues after search if the user wants to keep searching for different venues
+            venueSearch = (count) => {
+                const theater = response.data
+                if (concertVenue.length > count) {
+                        console.log(
+                        `\nVenue: ${theater[count].venue.name}
+                        \nLocation: ${theater[count].venue.city}, ${theater[count].venue.region}, ${theater[count].venue.country}
+                        \nConcert date: ${moment(theater[count].datetime).format('MM/DD/YYYY HH:MM:ss')}`
+                    )
+                    venueCount++
+                } else {
+                    concertVenue = [];
+                    venueCount = 0;
+                    return console.log(`\n--------------------------------------------------------------------------------\n
+                    \nSorry, we couldn\'t find a concert for you :(\n
+                    \n--------------------------------------------------------------------------------`);                                
+                }
             }
-            
-            if (answer.venue) {
-                venueSearch(venueCount);
-            } else {
-                fs.appendFile('log.txt', venue(), err => {
-                    if (err){
-                        console.log('Error: ', err)
-                    } else {
-                        console.log('Content Added!')
-                    }
-                })
-            }
+            venueSearch(venueCount);
+
+            inq.prompt([
+                {
+                    type: 'confirm',
+                    message: 'Would you like to search for a different venue?',
+                    name: 'venue',
+                    default: false
+                }
+            ]).then(answer => {
+                venue = () => {
+                    const theater = response.data;
+                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}              \n--------------------------------------------------------------------------------\n
+                    Venue: ${theater[venueCount-1].venue.name}
+                    Location: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount].venue.country}
+                    Concert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}\n
+                    \n
+                    \n--------------------------------------------------------------------------------`
+                }
+                
+                if (answer.venue) {
+                    venueSearch(venueCount);
+                } else {
+                    fs.appendFile('log.txt', venue(), err => {
+                        if (err){
+                            console.log('Error: ', err)
+                        } else {
+                            console.log('Content Added!')
+                        }
+                    })
+                    venueCount = 0;
+                    concertVenue = [];
+                }
+            })
         })
     })
+    } else {
+        axios.get(`https://rest.bandsintown.com/artists/${artist}/events?app_id=codingbootcamp`).then(response => {
+            concertVenue.push(response.data);
+            console.log(concertVenue[0].length)
+            venueSearch = (count) => {
+                const theater = response.data
+                if (concertVenue[0].length > count) {
+                        console.log(
+                        `\nVenue: ${theater[count].venue.name}
+                        \nLocation: ${theater[count].venue.city}, ${theater[count].venue.region}, ${theater[count].venue.country}
+                        \nConcert date: ${moment(theater[count].datetime).format('MM/DD/YYYY HH:MM:ss')}`
+                    )
+                    venueCount++
+                } else {
+                    concertVenue = [];
+                    venueCount = 0;
+                    return console.log(`\n--------------------------------------------------------------------------------\n
+                    \nSorry, we couldn\'t find a concert for you :(\n
+                    \n--------------------------------------------------------------------------------`);                                
+                }
+            }
+
+            venueSearch(venueCount);
+            inq.prompt([
+                {
+                    type: 'confirm',
+                    message: 'Would you like to search for a different venue?',
+                    name: 'venue',
+                    default: false
+                }
+            ]).then(answer => {
+                venue = () => {
+                    const theater = response.data
+                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}--------------------------------------------------------------------------------\n
+                    Venue: ${theater[venueCount-1].venue.name}
+                    Location: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount-1].venue.country}
+                    Concert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}\n
+                    \n--------------------------------------------------------------------------------`
+                }
+                
+                if (answer.venue) {
+                    venueSearch(venueCount);
+                } else {
+                    fs.appendFile('log.txt', venue(), err => {
+                        if (err){
+                            console.log('Error: ', err)
+                        } else {
+                            console.log('Content Added!')
+                        }
+                    })
+                    venueCount = 0;
+                    concertVenue = [];
+                }
+            })
+        })
+    }
 }
 
 OMDBIt = () => {
+    inq.prompt([
+        {
+            type: 'input',
+            message: 'What movie would you like to search?',
+            name: 'movie'
+        }
+    ]).then(answer => {
+    const movieName = answer.movie
+    const url = `http://www.omdbapi.com/?t=${movieName}&y=&plot=short&apikey=trilogy`;
+    axios.get(url).then(response => {
+        const movie = response.data;
+        const text = `\nOMDB Search at ${moment().format('HH:MM:ss MM/DD/YYYY')}
+        --------------------------------------------------------------------------------\n
+        \nTitle: ${movie.Title}
+        \nYear: ${movie.Year}
+        \nIMDB Rating: ${movie.Ratings[0]}
+        \nRotten Tomatoes Rating: ${movie.Ratings[1]}
+        \nCountry of production: ${movie.Country}
+        \nMovie Language: ${movie.Language}
+        \nPlot: ${movie.Plot}
+        \nActors: ${movie.Actors}
+        \nGenre: ${movie.Genre}
+        \nMovie Rating: ${movie.Rated}
+        --------------------------------------------------------------------------------\n`;
+
+        console.log(text)
+
+        fs.appendFile('log.txt', text, function(err, data){
+            if(!err){
+                console.log(`\n--------------------------------------------------------------------------------\nMovie Added!`)
+            } else {
+                console.log('Error: ', err)
+            }
+        })
+
+    })
     // * Title of the movie.
     // * Year the movie came out.
     // * IMDB Rating of the movie.
@@ -311,6 +444,9 @@ OMDBIt = () => {
     // * Language of the movie.
     // * Plot of the movie.
     // * Actors in the movie.
+
+    // Search Mr. Nobody if no input
+    })
 }
 
 randomizeIt = () => {
