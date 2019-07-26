@@ -67,13 +67,12 @@ spotifyIt = () => {
                 // console.log(response)
                 console.log(
                     '\nThis is what happens when you leave it to me ;)',
-                    '\n--------------------------------------------------------------------------------\n',
+                    '\n--------------------------------------------------------------------------------',
                     '\nTrack: ' + ace.name,
                     '\nArtist: ' + ace.artists[0].name,
                     '\nAlbum: ' + ace.name,
                     '\nAlbum Release Date: ' + ace.release_date,
                     '\nLink to track: ' + ace.external_urls.spotify,
-                    '\n',
                     '\n--------------------------------------------------------------------------------'
                 );
             })
@@ -89,7 +88,6 @@ spotifyIt = () => {
                             '\nGenres: ' + artist[count].genres.join(', '),
                             '\nSpotify Followers: ' + artist[count].followers.total,
                             '\nLink to Artist: ' + artist[count].external_urls.spotify,
-                            '\n',
                             '\n--------------------------------------------------------------------------------'
                         );
                         artistCount++;
@@ -317,11 +315,10 @@ concertIt = (artist) => {
             ]).then(answer => {
                 venue = () => {
                     const theater = response.data;
-                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}              \n--------------------------------------------------------------------------------\n
-                    Venue: ${theater[venueCount-1].venue.name}
-                    Location: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount].venue.country}
-                    Concert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}\n
-                    \n
+                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}              \n--------------------------------------------------------------------------------
+                    \nVenue: ${theater[venueCount-1].venue.name}
+                    \nLocation: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount].venue.country}
+                    \nConcert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}
                     \n--------------------------------------------------------------------------------`
                 }
                 
@@ -374,10 +371,10 @@ concertIt = (artist) => {
             ]).then(answer => {
                 venue = () => {
                     const theater = response.data
-                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}--------------------------------------------------------------------------------\n
-                    Venue: ${theater[venueCount-1].venue.name}
-                    Location: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount-1].venue.country}
-                    Concert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}\n
+                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}\n--------------------------------------------------------------------------------
+                    \nVenue: ${theater[venueCount-1].venue.name}
+                    \nLocation: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount-1].venue.country}
+                    \nConcert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}
                     \n--------------------------------------------------------------------------------`
                 }
                 
@@ -407,45 +404,55 @@ OMDBIt = () => {
             name: 'movie'
         }
     ]).then(answer => {
-    const movieName = answer.movie
-    const url = `http://www.omdbapi.com/?t=${movieName}&y=&plot=short&apikey=trilogy`;
-    axios.get(url).then(response => {
-        const movie = response.data;
-        const text = `\nOMDB Search at ${moment().format('HH:MM:ss MM/DD/YYYY')}
-        --------------------------------------------------------------------------------\n
-        \nTitle: ${movie.Title}
-        \nYear: ${movie.Year}
-        \nIMDB Rating: ${movie.Ratings[0]}
-        \nRotten Tomatoes Rating: ${movie.Ratings[1]}
-        \nCountry of production: ${movie.Country}
-        \nMovie Language: ${movie.Language}
-        \nPlot: ${movie.Plot}
-        \nActors: ${movie.Actors}
-        \nGenre: ${movie.Genre}
-        \nMovie Rating: ${movie.Rated}
-        --------------------------------------------------------------------------------\n`;
+        if (answer.movie === ''){
+            const url = `http://www.omdbapi.com/?t=mr+nobody&y=&plot=short&apikey=trilogy`;
+            axios.get(url).then(response => {
+                const movie = response.data;
+                console.log(`\nOMDB Search at ${moment().format('HH:MM:ss MM/DD/YYYY')}
+                \n--------------------------------------------------------------------------------
+                \nTitle: ${movie.Title}
+                \nYear: ${movie.Year}
+                \nIMDB Rating: ${movie.Ratings[0].value}
+                \nRotten Tomatoes Rating: ${movie.Ratings[1].value}
+                \nCountry of production: ${movie.Country}
+                \nMovie Language: ${movie.Language}
+                \nPlot: ${movie.Plot}
+                \nActors: ${movie.Actors}
+                \nGenre: ${movie.Genre}
+                \nMovie Rating: ${movie.Rated}
+                \n--------------------------------------------------------------------------------`);
+            })
+        } else {
+            const movieName = answer.movie
+            const url = `http://www.omdbapi.com/?t=${movieName}&y=&plot=short&apikey=trilogy`;
+            axios.get(url).then(response => {
+                const movie = response.data;
+                // console.log(movie)
+                const text = `\nOMDB Search at ${moment().format('HH:MM:ss MM/DD/YYYY')}
+                \n--------------------------------------------------------------------------------
+                \nTitle: ${movie.Title}
+                \nYear: ${movie.Year}
+                \nIMDB Rating: ${movie.Ratings[0].value}
+                \nRotten Tomatoes Rating: ${movie.Ratings[1].value}
+                \nCountry of production: ${movie.Country}
+                \nMovie Language: ${movie.Language}
+                \nPlot: ${movie.Plot}
+                \nActors: ${movie.Actors}
+                \nGenre: ${movie.Genre}
+                \nMovie Rating: ${movie.Rated}
+                \n--------------------------------------------------------------------------------`;
 
-        console.log(text)
+                console.log(text)
 
-        fs.appendFile('log.txt', text, function(err, data){
-            if(!err){
-                console.log(`\n--------------------------------------------------------------------------------\nMovie Added!`)
-            } else {
-                console.log('Error: ', err)
-            }
-        })
-
-    })
-    // * Title of the movie.
-    // * Year the movie came out.
-    // * IMDB Rating of the movie.
-    // * Rotten Tomatoes Rating of the movie.
-    // * Country where the movie was produced.
-    // * Language of the movie.
-    // * Plot of the movie.
-    // * Actors in the movie.
-
-    // Search Mr. Nobody if no input
+                fs.appendFile('log.txt', text, function(err, data){
+                    if(!err){
+                        console.log(`\n--------------------------------------------------------------------------------\nMovie Added!`)
+                    } else {
+                        console.log('Error: ', err)
+                    }
+                })
+            })
+        }
     })
 }
 
