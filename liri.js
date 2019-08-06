@@ -279,65 +279,70 @@ concertIt = (artist) => {
                 message: 'Please enter the name of the artist you would like to search',
                 name: 'artist'
             }
-    ]).then(answer => {
-        const theater = answer.artist;
-        axios.get(`https://rest.bandsintown.com/artists/${theater}/events?app_id=codingbootcamp`).then(response => {
-            concertVenue.push(response.data);
-            // console.log(venue.data)
+        ]).then(answer => {
+            const theater = answer.artist;
+            axios.get(`https://rest.bandsintown.com/artists/${theater}/events?app_id=codingbootcamp`).then(response => {
+                concertVenue.push(response.data);
+                // console.log(venue.data)
 
-            // Function to loop thru the venues after search if the user wants to keep searching for different venues
-            venueSearch = (count) => {
-                const theater = response.data
-                if (concertVenue.length > count) {
-                        console.log(
-                        `\nVenue: ${theater[count].venue.name}
-                        \nLocation: ${theater[count].venue.city}, ${theater[count].venue.region}, ${theater[count].venue.country}
-                        \nConcert date: ${moment(theater[count].datetime).format('MM/DD/YYYY HH:MM:ss')}`
-                    )
-                    venueCount++
-                } else {
-                    concertVenue = [];
-                    venueCount = 0;
-                    return console.log(`\n--------------------------------------------------------------------------------\n
-                    \nSorry, we couldn\'t find a concert for you :(\n
-                    \n--------------------------------------------------------------------------------`);                                
+                // Function to loop thru the venues after search if the user wants to keep searching for different venues
+                venueSearch = (count) => {
+                    const theater = response.data
+                    // console.log(concertVenue[0].length)
+                    // console.log(count)
+                    if (concertVenue.length[0] > count) {
+                            console.log(
+                            `\nVenue: ${theater[count].venue.name}
+                            \nLocation: ${theater[count].venue.city}, ${theater[count].venue.region}, ${theater[count].venue.country}
+                            \nConcert date: ${moment(theater[count].datetime).format('MM/DD/YYYY HH:MM:ss')}`
+                        )
+                        venueCount++
+                    } else {
+                        concertVenue = [];
+                        venueCount = 0;
+                        return console.log(`\n--------------------------------------------------------------------------------\n
+                        \nSorry, we couldn\'t find a concert for you :(\n
+                        \n--------------------------------------------------------------------------------`);                                
+                    }
                 }
-            }
-            venueSearch(venueCount);
 
-            inq.prompt([
-                {
-                    type: 'confirm',
-                    message: 'Would you like to search for a different venue?',
-                    name: 'venue',
-                    default: false
-                }
-            ]).then(answer => {
-                venue = () => {
-                    const theater = response.data;
-                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}              \n--------------------------------------------------------------------------------
-                    \nVenue: ${theater[venueCount-1].venue.name}
-                    \nLocation: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount].venue.country}
-                    \nConcert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}
-                    \n--------------------------------------------------------------------------------`
-                }
-                
-                if (answer.venue) {
-                    venueSearch(venueCount);
-                } else {
-                    fs.appendFile('log.txt', venue(), err => {
-                        if (err){
-                            console.log('Error: ', err)
+                venueSearch(venueCount);
+
+                if (concertVenue.length[0] > venueCount) {
+                    inq.prompt([
+                        {
+                            type: 'confirm',
+                            message: 'Would you like to search for a different venue?',
+                            name: 'venue',
+                            default: false
+                        }
+                    ]).then(answer => {
+                        venue = () => {
+                            const theater = response.data;
+                            return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}              \n--------------------------------------------------------------------------------
+                            \nVenue: ${theater[venueCount-1].venue.name}
+                            \nLocation: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount].venue.country}
+                            \nConcert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}
+                            \n--------------------------------------------------------------------------------`
+                        }
+                        
+                        if (answer.venue) {
+                            venueSearch(venueCount);
                         } else {
-                            console.log('Content Added!')
+                            fs.appendFile('log.txt', venue(), err => {
+                                if (err){
+                                    console.log('Error: ', err)
+                                } else {
+                                    console.log('Content Added!')
+                                }
+                            })
+                            venueCount = 0;
+                            concertVenue = [];
                         }
                     })
-                    venueCount = 0;
-                    concertVenue = [];
                 }
             })
         })
-    })
     } else {
         axios.get(`https://rest.bandsintown.com/artists/${artist}/events?app_id=codingbootcamp`).then(response => {
             concertVenue.push(response.data);
@@ -361,37 +366,40 @@ concertIt = (artist) => {
             }
 
             venueSearch(venueCount);
-            inq.prompt([
-                {
-                    type: 'confirm',
-                    message: 'Would you like to search for a different venue?',
-                    name: 'venue',
-                    default: false
-                }
-            ]).then(answer => {
-                venue = () => {
-                    const theater = response.data
-                    return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}\n--------------------------------------------------------------------------------
-                    \nVenue: ${theater[venueCount-1].venue.name}
-                    \nLocation: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount-1].venue.country}
-                    \nConcert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}
-                    \n--------------------------------------------------------------------------------`
-                }
-                
-                if (answer.venue) {
-                    venueSearch(venueCount);
-                } else {
-                    fs.appendFile('log.txt', venue(), err => {
-                        if (err){
-                            console.log('Error: ', err)
-                        } else {
-                            console.log('Content Added!')
-                        }
-                    })
-                    venueCount = 0;
-                    concertVenue = [];
-                }
-            })
+
+            if (venueCount > 0){
+                inq.prompt([
+                    {
+                        type: 'confirm',
+                        message: 'Would you like to search for a different venue?',
+                        name: 'venue',
+                        default: false
+                    }
+                ]).then(answer => {
+                    venue = () => {
+                        const theater = response.data
+                        return `\nConcert Search at ${moment().format('HH:mm:ss MM/DD/YYYY')}\n--------------------------------------------------------------------------------
+                        \nVenue: ${theater[venueCount-1].venue.name}
+                        \nLocation: ${theater[venueCount-1].venue.city}, ${theater[venueCount-1].venue.region}, ${theater[venueCount-1].venue.country}
+                        \nConcert date: ${moment(theater[venueCount-1].datetime).format('MM/DD/YYYY')}
+                        \n--------------------------------------------------------------------------------`
+                    }
+                    
+                    if (answer.venue && venueCount < concertVenue[0].length) {
+                        venueSearch(venueCount);
+                    } else {
+                        fs.appendFile('log.txt', venue(), err => {
+                            if (err){
+                                console.log('Error: ', err)
+                            } else {
+                                console.log('Content Added!')
+                            }
+                        })
+                        venueCount = 0;
+                        concertVenue = [];
+                    }
+                })
+            }
         })
     }
 }
